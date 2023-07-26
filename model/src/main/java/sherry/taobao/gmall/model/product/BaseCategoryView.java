@@ -20,12 +20,12 @@ import java.io.Serializable;
 @ApiModel(description = "BaseCategoryView")
 @TableName("base_category_view")
 public class BaseCategoryView implements Serializable {
-	
+
 	private static final long serialVersionUID = 1L;
 
 	@ApiModelProperty(value = "id")
 	private Long id;
-	
+
 	@ApiModelProperty(value = "一级分类编号")
 	@TableField("category1_id")
 	private Long category1Id;
@@ -51,4 +51,5 @@ public class BaseCategoryView implements Serializable {
 	private String category3Name;
 
 }
+
 

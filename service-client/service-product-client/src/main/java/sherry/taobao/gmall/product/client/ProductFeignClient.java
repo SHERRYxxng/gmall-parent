@@ -1,28 +1,38 @@
 package sherry.taobao.gmall.product.client;
 
-/**
- * @Description:
- * @Author: SHERRY
- * @email: <a href="mailto:SherryTh743779@gmail.com">TianHai</a>
- * @Date: 2023/8/2 10:08
- */
+import com.alibaba.fastjson.JSONObject;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import sherry.taobao.gmall.common.result.Result;
 import sherry.taobao.gmall.model.product.*;
+import sherry.taobao.gmall.product.client.impl.ProductDegradeFeignClient;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-
 @FeignClient(value = "service-product",fallback = ProductDegradeFeignClient.class)
 public interface ProductFeignClient {
 
+    /**
+     *根据品牌Id 获取品牌数据
+     * /api/product/inner/getTrademark/{tmId}
+     * @param tmId
+     * @return
+     */
+    @GetMapping("/api/product/inner/getTrademark/{tmId}")
+    public BaseTrademark getTrademark(@PathVariable Long tmId);
 
 
+    /**
+     * /api/product/getBaseCategoryList
+     * 获取首页分类数据
+     * @return
+     */
+    @GetMapping("/api/product/getBaseCategoryList")
+    public Result<List<JSONObject>> getBaseCategoryList();
     /**
      * //api/product/inner/getAttrList/{skuId}
      * 根据skuId 获取平台属性数据

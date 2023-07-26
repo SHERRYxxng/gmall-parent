@@ -2,8 +2,23 @@ package sherry.taobao.gmall.common.cache;
 
 import java.lang.annotation.*;
 
+
 /**
- * @author atguigu-mqx
+ * 元注解：修饰注解的注解
+ *@Target: 目标位置
+ *    TYPE:类
+ *    METHOD:方法
+ *    可以参考：ElementType
+ *@Retention：生命周期
+ *
+ *    SOURCE：源码
+ *    CLASS ：字节码
+ *   RUNTIME：运行时期
+ * @Inherited
+ *    父子类对注解继承关系
+ *@Documented
+ *  javadoc 生成api文档
+ *
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
@@ -11,8 +26,7 @@ import java.lang.annotation.*;
 @Documented
 public @interface GmallCache {
 
-    //  定义一个数据 sku:skuId
-    //  目的用这个前缀要想组成 缓存的key！
-    String prefix() default "cache:";
 
+    String prefix() default "cache:";
+    String suffix() default ":info";
 }

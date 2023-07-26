@@ -1,63 +1,108 @@
 package sherry.taobao.gmall.product.controller;
 
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import sherry.taobao.gmall.common.result.Result;
 import sherry.taobao.gmall.model.product.BaseTrademark;
 import sherry.taobao.gmall.product.service.BaseTrademarkService;
 
-/**
- * @Description:
- * @Author: SHERRY
- * @email: <a href="mailto:SherryTh743779@gmail.com">TianHai</a>
- * @Date: 2023/7/28 19:49
- */
 @RestController
 @RequestMapping("/admin/product/baseTrademark")
 public class BaseTrademarkController {
 
+
     @Autowired
     private BaseTrademarkService baseTrademarkService;
 
-    @ApiOperation(value = "分页列表")
-    @GetMapping("{page}/{limit}")
-    public Result index(@PathVariable Long page,
-                        @PathVariable Long limit) {
 
-        Page<BaseTrademark> pageParam = new Page<>(page, limit);
-        IPage<BaseTrademark> pageModel = baseTrademarkService.getPage(pageParam);
-        return Result.ok(pageModel);
+
+
+    /**
+     * 保存品牌
+     * admin/product/baseTrademark/save
+     * @param baseTrademark
+     * @return
+     */
+    @PostMapping("/save")
+    public Result saveTradeMark(@RequestBody BaseTrademark baseTrademark){
+        baseTrademarkService.save(baseTrademark);
+
+        return Result.ok();
+
     }
 
-    @ApiOperation(value = "获取BaseTrademark")
-    @GetMapping("get/{id}")
-    public Result get(@PathVariable String id) {
-        BaseTrademark baseTrademark = baseTrademarkService.getById(id);
-        return Result.ok(baseTrademark);
-    }
 
-    @ApiOperation(value = "新增BaseTrademark")
-    @PostMapping("save")
-    public Result save(@RequestBody BaseTrademark banner) {
-        baseTrademarkService.save(banner);
+    /**
+     * 修改品牌
+     * admin/product/baseTrademark/update
+     * @param baseTrademark
+     * @return
+     */
+    @PutMapping("/update")
+    public Result updateTrademark(@RequestBody BaseTrademark baseTrademark){
+
+        baseTrademarkService.updateById(baseTrademark);
         return Result.ok();
     }
 
-    @ApiOperation(value = "修改BaseTrademark")
-    @PutMapping("update")
-    public Result updateById(@RequestBody BaseTrademark banner) {
-        baseTrademarkService.updateById(banner);
-        return Result.ok();
-    }
+    /**
+     * 根据id删除品牌信息
+     *     ///admin/product/baseTrademark/remove/{id}
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/remove/{id}")
+    public Result deleteTrademark(@PathVariable Long id){
 
-    @ApiOperation(value = "删除BaseTrademark")
-    @DeleteMapping("remove/{id}")
-    public Result remove(@PathVariable Long id) {
         baseTrademarkService.removeById(id);
         return Result.ok();
+    }
+
+
+
+    /**
+     *
+     * 根据id获取品牌对象
+     *
+     * /admin/product/baseTrademark/get/{id}
+     * @param id
+     * @return
+     */
+    @GetMapping("/get/{id}")
+    public Result getBaseTrademark(@PathVariable Long id ){
+
+
+        BaseTrademark baseTrademark = baseTrademarkService.getById(id);
+        return Result.ok(baseTrademark);
+
+
+    }
+
+
+
+    /**
+     * 品牌查询分页列表
+     * /admin/product/baseTrademark/{page}/{limit}
+     *
+     * @param page
+     * @param limit
+     * @return
+     */
+    @GetMapping("/{page}/{limit}")
+    public Result baseTrademarkPage(@PathVariable Long page,
+                                    @PathVariable Long limit){
+
+        //封装分页查询对象
+        Page<BaseTrademark> trademarkPage=new Page<BaseTrademark>(page,limit);
+        //查询
+        IPage<BaseTrademark> baseTrademarkIPage = baseTrademarkService.page(trademarkPage, new QueryWrapper<BaseTrademark>().orderByAsc("id"));
+
+        return Result.ok(baseTrademarkIPage);
+
     }
 
 }

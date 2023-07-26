@@ -5,7 +5,7 @@ package sherry.taobao.gmall.common.constant;
  * set name admin
  */
 public class RedisConst {
-
+    public static final String SKU_BLOOM_FILTER="sku:bloom:filter";
     public static final String SKUKEY_PREFIX = "sku:";
     public static final String SKUKEY_SUFFIX = ":info";
     //单位：秒

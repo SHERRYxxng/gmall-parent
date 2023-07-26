@@ -27,7 +27,6 @@ public class ItemApiController {
     @GetMapping("/{skuId}")
     public Result item(@PathVariable Long skuId){
         Map<String,Object> resultMap=itemService.getItem(skuId);
-
         return Result.ok(resultMap);
     }
 

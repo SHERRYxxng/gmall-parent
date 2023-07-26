@@ -1,8 +1,9 @@
 package sherry.taobao.gmall.product.service.impl;
 
+
 import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import sherry.taobao.gmall.model.product.BaseCategoryTrademark;
@@ -12,108 +13,158 @@ import sherry.taobao.gmall.product.mapper.BaseCategoryTrademarkMapper;
 import sherry.taobao.gmall.product.mapper.BaseTrademarkMapper;
 import sherry.taobao.gmall.product.service.BaseCategoryTrademarkService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * @Description:
- * @Author: SHERRY
- * @email: <a href="mailto:SherryTh743779@gmail.com">TianHai</a>
- * @Date: 2023/7/28 19:51
- */
 @Service
-public class BaseCategoryTrademarkServiceImpl extends ServiceImpl<BaseCategoryTrademarkMapper,BaseCategoryTrademark> implements BaseCategoryTrademarkService {
+@SuppressWarnings("all")
+public class BaseCategoryTrademarkServiceImpl implements BaseCategoryTrademarkService {
 
-    //  调用mapper 层！
     @Autowired
-    private BaseTrademarkMapper baseTrademarkMapper;
-
+    private BaseTrademarkMapper  baseTrademarkMapper;
     @Autowired
     private BaseCategoryTrademarkMapper baseCategoryTrademarkMapper;
-
+    /**
+     * 根据category3Id获取品牌列表
+     * @param category3Id
+     * @return
+     */
     @Override
     public List<BaseTrademark> findTrademarkList(Long category3Id) {
-        //  根据分类Id 获取到品牌Id 集合数据
-        //  select * from base_category_trademark where category3_id = ?;
-        QueryWrapper<BaseCategoryTrademark> baseCategoryTrademarkQueryWrapper = new QueryWrapper<>();
-        baseCategoryTrademarkQueryWrapper.eq("category3_id",category3Id);
-        List<BaseCategoryTrademark> baseCategoryTrademarkList = baseCategoryTrademarkMapper.selectList(baseCategoryTrademarkQueryWrapper);
 
-        //  判断baseCategoryTrademarkList 这个集合
-        if(!CollectionUtils.isEmpty(baseCategoryTrademarkList)){
-            //  需要获取到这个集合中的品牌Id 集合数据
-            List<Long> tradeMarkIdList = baseCategoryTrademarkList.stream().map(baseCategoryTrademark -> {
+        //构建查询对象
+        QueryWrapper<BaseCategoryTrademark> queryWrapper=new QueryWrapper<>();
+        queryWrapper.eq("category3_id",category3Id);
+        //根据三级分类id查询关联的品牌id集合
+        List<BaseCategoryTrademark> baseCategoryTrademarks = baseCategoryTrademarkMapper.selectList(queryWrapper);
+        //处理结果，返回品牌id列表 stream流
+        //filter 如果对集合处理之前和处理之后，类型一样选择
+        //map 如果对集合处理之前和处理之后，类型不一样选择  List<BaseCategoryTrademark>--->List<Long>
+        if(!CollectionUtils.isEmpty(baseCategoryTrademarks)){
+
+            List<Long> trademarkIds = baseCategoryTrademarks.stream().map(baseCategoryTrademark -> {
+
                 return baseCategoryTrademark.getTrademarkId();
             }).collect(Collectors.toList());
-            //  正常查询数据的话... 需要根据品牌Id 来获取集合数据！
-            return baseTrademarkMapper.selectBatchIds(tradeMarkIdList);
+
+            //根据id集合查询品牌列表
+            //第一种方式：filter过滤
+            //查询所有的品牌
+//            List<BaseTrademark> baseTrademarks = baseTrademarkMapper.selectList(null);
+//            //过滤和当前关联的品牌
+//            List<BaseTrademark> baseTrademarkList = baseTrademarks.stream().filter(baseTrademark -> {
+//
+//
+//                return trademarkIds.contains(baseTrademark.getId());
+//            }).collect(Collectors.toList());
+
+            //----第一种结束
+
+//            第二种开始 原始sql方式 id =1,2,3
+            //sql语句：select *from base_trademark where  id in (1,2,3);
+            QueryWrapper<BaseTrademark> trademarkQueryWrapper =new QueryWrapper<>();
+            trademarkQueryWrapper.in("id",trademarkIds);
+            List<BaseTrademark> baseTrademarkList = baseTrademarkMapper.selectList(trademarkQueryWrapper);
+            return baseTrademarkList;
+
+
         }
-        //  如果集合为空，则默认返回空
-        return null;
+
+
+
+
+
+
+
+        return new ArrayList<>();
     }
 
+    /**
+     * 删除分类品牌关联
+     * @param category3Id
+     * @param trademarkId
+     */
     @Override
-    public void removeBaseCategoryTrademarkById(Long category3Id, Long trademarkId) {
-        //  逻辑删除： 本质更新操作 is_deleted
-        //  更新： update base_category_trademark set is_deleted = 1 where category3_id=? and trademark_id=?;
-        QueryWrapper<BaseCategoryTrademark> baseCategoryTrademarkQueryWrapper = new QueryWrapper<>();
-        baseCategoryTrademarkQueryWrapper.eq("category3_id",category3Id);
-        baseCategoryTrademarkQueryWrapper.eq("trademark_id",trademarkId);
-        baseCategoryTrademarkMapper.delete(baseCategoryTrademarkQueryWrapper);
+    public void remove(Long category3Id, Long trademarkId) {
+
+
+        //构建查询器
+        QueryWrapper<BaseCategoryTrademark> queryWrapper=new QueryWrapper<>();
+        queryWrapper.eq("category3_id",category3Id);
+        queryWrapper.eq("trademark_id",trademarkId);
+        //执行取消关联（删除）
+        baseCategoryTrademarkMapper.delete(queryWrapper);
 
     }
 
+    /**
+     * 根据category3Id获取可选品牌列表
+     * @param category3Id
+     * @return
+     */
     @Override
     public List<BaseTrademark> findCurrentTrademarkList(Long category3Id) {
-        //  哪些是关联的品牌Id
-        QueryWrapper<BaseCategoryTrademark> baseCategoryTrademarkQueryWrapper = new QueryWrapper<>();
-        baseCategoryTrademarkQueryWrapper.eq("category3_id",category3Id);
-        List<BaseCategoryTrademark> baseCategoryTrademarkList = baseCategoryTrademarkMapper.selectList(baseCategoryTrademarkQueryWrapper);
+        //查询当前份分类id关联的分类品牌集合
+        QueryWrapper<BaseCategoryTrademark> queryWrapper=new QueryWrapper<>();
+        queryWrapper.eq("category3_id",category3Id);
+        List<BaseCategoryTrademark> baseCategoryTrademarks = baseCategoryTrademarkMapper.selectList(queryWrapper);
 
-        //  判断
-        if (!CollectionUtils.isEmpty(baseCategoryTrademarkList)){
-            //  找到关联的品牌Id 集合数据 {1,3}
-            List<Long> tradeMarkIdList = baseCategoryTrademarkList.stream().map(baseCategoryTrademark -> {
+
+        //根据查询结果获取关联的品牌id
+        if(!CollectionUtils.isEmpty(baseCategoryTrademarks)){
+
+            List<Long> trademarkIds = baseCategoryTrademarks.stream().map(baseCategoryTrademark -> {
+
                 return baseCategoryTrademark.getTrademarkId();
             }).collect(Collectors.toList());
-            //  在所有的品牌Id 中将这些有关联的品牌Id 给过滤掉就可以！
-            //  select * from base_trademark; 外面 baseTrademarkMapper.selectList(null) {1,2,3,5}
-            List<BaseTrademark> baseTrademarkList = baseTrademarkMapper.selectList(null).stream().filter(baseTrademark -> {
-                return !tradeMarkIdList.contains(baseTrademark.getId());
+
+
+
+            //查询所有品牌
+            List<BaseTrademark> baseTrademarks = baseTrademarkMapper.selectList(null);
+            //过滤已经关联的品牌
+            List<BaseTrademark> trademarkList = baseTrademarks.stream().filter(baseTrademark -> {
+
+                return !trademarkIds.contains(baseTrademark.getId());
             }).collect(Collectors.toList());
-            //  返回数据
-            return baseTrademarkList;
+
+            return trademarkList;
+
         }
-        //  如果说这个三级分类Id 下 没有任何品牌！ 则获取到所有的品牌数据！
+
         return baseTrademarkMapper.selectList(null);
     }
 
+    /**
+     * 保存分类品牌关联
+     * /admin/product/baseCategoryTrademark/save
+     * @param categoryTrademarkVo
+     */
     @Override
     public void save(CategoryTrademarkVo categoryTrademarkVo) {
-        /*
-        private Long category3Id;
-        private List<Long> trademarkIdList;
 
-        category3Id 61 tmId 2;
-        category3Id 61 tmId 5;
-         */
-        //  获取到品牌Id 集合数据
+        //获取关联品牌id列表
         List<Long> trademarkIdList = categoryTrademarkVo.getTrademarkIdList();
+        Long category3Id = categoryTrademarkVo.getCategory3Id();
+        //拼接关联对象
+        if(!CollectionUtils.isEmpty(trademarkIdList)){
 
-        //  判断
-        if (!CollectionUtils.isEmpty(trademarkIdList)){
-            //  做映射关系
-            List<BaseCategoryTrademark> baseCategoryTrademarkList = trademarkIdList.stream().map((trademarkId) -> {
-                //  创建一个分类Id 与品牌的关联的对象
-                BaseCategoryTrademark baseCategoryTrademark = new BaseCategoryTrademark();
-                baseCategoryTrademark.setCategory3Id(categoryTrademarkVo.getCategory3Id());
+            trademarkIdList.stream().forEach(trademarkId->{
+
+                //创建关联对象
+                BaseCategoryTrademark baseCategoryTrademark=new BaseCategoryTrademark();
+                baseCategoryTrademark.setCategory3Id(category3Id);
                 baseCategoryTrademark.setTrademarkId(trademarkId);
-                //  返回数据
-                return baseCategoryTrademark;
-            }).collect(Collectors.toList());
+                //保存
 
-            //  集中保存到数据库    baseCategoryTrademarkList
-            this.saveBatch(baseCategoryTrademarkList);
+                baseCategoryTrademarkMapper.insert(baseCategoryTrademark);
+
+            });
+
         }
+
+
+
     }
 }

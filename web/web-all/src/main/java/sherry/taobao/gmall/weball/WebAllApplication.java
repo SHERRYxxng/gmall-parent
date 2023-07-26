@@ -15,6 +15,7 @@ import org.springframework.context.annotation.ComponentScan;
  */
 @ComponentScan({"sherry.taobao.gmall"})
 @SpringBootApplication
+@ComponentScan({"sherry.taobao.gmall"})
 @EnableDiscoveryClient
 @EnableFeignClients(basePackages= {"sherry.taobao.gmall"})
 public class WebAllApplication {

@@ -12,6 +12,8 @@
     <modules>
         <module>service-product</module>
         <module>service-item</module>
+        <module>service-list</module>
+        <module>service-user</module>
     </modules>
     <artifactId>service</artifactId>
 

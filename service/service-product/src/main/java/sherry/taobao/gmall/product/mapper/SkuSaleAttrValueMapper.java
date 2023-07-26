@@ -7,13 +7,12 @@ import sherry.taobao.gmall.model.product.SkuSaleAttrValue;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @Description:
- * @Author: SHERRY
- * @email: <a href="mailto:SherryTh743779@gmail.com">TianHai</a>
- * @Date: 2023/7/31 16:44
- */
 @Mapper
-public interface SkuSaleAttrValueMapper extends BaseMapper<SkuSaleAttrValue> {
-    List<Map> selectSaleAttrValuesBySpu(Long spuId);
+public interface SkuSaleAttrValueMapper  extends BaseMapper<SkuSaleAttrValue> {
+    /**
+     *  商品切换关系查询
+     * @param spuId
+     * @return
+     */
+    List<Map> selectSkuValueIdMap(Long spuId);
 }

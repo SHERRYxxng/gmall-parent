@@ -1,5 +1,7 @@
 package sherry.taobao.gmall.product.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -7,6 +9,7 @@ import sherry.taobao.gmall.common.result.Result;
 import sherry.taobao.gmall.model.product.*;
 import sherry.taobao.gmall.product.service.ManageService;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -90,6 +93,83 @@ public class BaseManageController {
         manageService.saveSpuInfo(spuInfo);
         return Result.ok();
     }
+    /**
+     * SKU分页列表
+     * @param page
+     * @param limit
+     * @return
+     */
+
+//    @GetMapping("/list/{page}/{limit}")
+//    public Result index(
+//            @PathVariable Long page,
+//            @PathVariable Long limit) {
+//
+//        Page<SkuInfo> pageParam = new Page<>(page, limit);
+//        IPage<SkuInfo> pageModel = manageService.getPage(pageParam);
+//        return Result.ok(pageModel);
+//    }
+    /**
+     * 商品上架
+     * @param skuId
+     * @return
+     */
+    @GetMapping("onSale/{skuId}")
+    public Result onSale(@PathVariable("skuId") Long skuId) {
+        manageService.onSale(skuId);
+        return Result.ok();
+    }
+
+    /**
+     * 商品下架
+     * @param skuId
+     * @return
+     */
+    @GetMapping("cancelSale/{skuId}")
+    public Result cancelSale(@PathVariable("skuId") Long skuId) {
+        manageService.cancelSale(skuId);
+        return Result.ok();
+    }
+    /**
+     * 保存sku
+     * @param skuInfo
+     * @return
+     */
+    /**
+     * //admin/product/list/{page}/{limit}
+     * 分页sku列表
+     * @param page
+     * @param limit
+     * @return
+     */
+    @GetMapping("/list/{page}/{limit}")
+    public Result findSkuByPage(@PathVariable Long page,
+                                @PathVariable Long limit){
+
+        //封装
+        Page<SkuInfo> skuInfoPage=new Page<>(page,limit);
+        //查询
+        IPage<SkuInfo> skuInfoIPage= manageService.findSkuByPage(skuInfoPage);
+        return Result.ok(skuInfoIPage);
+
+    }
+    @PostMapping("saveSkuInfo")
+    public Result saveSkuInfo(@RequestBody SkuInfo skuInfo) {
+        // 调用服务层
+        manageService.saveSkuInfo(skuInfo);
+        return Result.ok();
+    }
+
+    /**
+     * 获取sku最新价格
+     * @param skuId
+     * @return
+     */
+    @GetMapping("inner/getSkuPrice/{skuId}")
+    public BigDecimal getSkuPrice(@PathVariable Long skuId){
+        return manageService.getSkuPrice(skuId);
+    }
+
 }
 
 

@@ -30,7 +30,7 @@ public class GmallCacheAspect {
 
     @Autowired
     private RedisTemplate redisTemplate;
-
+//gmallCacheAspect
     //  定义一个环绕通知！
     @SneakyThrows
     @Around("@annotation(sherry.taobao.gmall.common.cache.GmallCache)")

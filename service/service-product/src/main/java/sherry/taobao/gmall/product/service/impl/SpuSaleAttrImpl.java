@@ -2,7 +2,6 @@ package sherry.taobao.gmall.product.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import sherry.taobao.gmall.model.product.SpuSaleAttr;
-import sherry.taobao.gmall.product.mapper.SpuImageMapper;
 import sherry.taobao.gmall.product.mapper.SpuSaleAttrMapper;
 import sherry.taobao.gmall.product.service.SpuSaleAttrService;
 
@@ -21,5 +20,10 @@ public class SpuSaleAttrImpl  implements SpuSaleAttrService {
     public List<SpuSaleAttr> getSpuSaleAttrList(Long spuId) {
         return spuSaleAttrMapper.selectSpuSaleAttrList(spuId);
     }
+    @Override
+    public List<SpuSaleAttr> getSpuSaleAttrListCheckBySku(Long skuId, Long spuId) {
+        return spuSaleAttrMapper.selectSpuSaleAttrListCheckBySku(skuId, spuId);
+    }
+
 
 }

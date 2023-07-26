@@ -11,7 +11,10 @@ import sherry.taobao.gmall.model.product.*;
 import sherry.taobao.gmall.product.mapper.*;
 import sherry.taobao.gmall.product.service.ManageService;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Description:
@@ -31,7 +34,20 @@ public class ManageServiceImpl implements ManageService {
     private SpuSaleAttrValueMapper spuSaleAttrValueMapper;
     @Autowired
     private SpuPosterMapper spuPosterMapper;
+    @Autowired
+    private SkuInfoMapper skuInfoMapper;
+    @Autowired
+    private SkuImageMapper skuImageMapper;
 
+    @Autowired
+    private SkuAttrValueMapper skuAttrValueMapper;
+
+    @Autowired
+    private SkuSaleAttrValueMapper skuSaleAttrValueMapper;
+    @Autowired
+    private SkuManageMapper skuManageMapper;
+    @Autowired
+    private BaseCategoryViewMapper baseCategoryViewMapper;
     @Autowired
     private BaseSaleAttrMapper baseSaleAttrMapper;
     @Autowired
@@ -218,4 +234,148 @@ public class ManageServiceImpl implements ManageService {
             }
         }
     }
+
+    @Override
+    public List<SpuImage> getSpuImageList(Long spuId) {
+        QueryWrapper<SpuImage> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("spu_id", spuId);
+        return spuImageMapper.selectList(queryWrapper);
+
+    }
+
+    @Override
+    public List<SpuSaleAttr> getSpuSaleAttrList(Long spuId) {
+        return spuSaleAttrMapper.selectSpuSaleAttrList(spuId);
+    }
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveSkuInfo(SkuInfo skuInfo) {
+    /*
+        skuInfo 库存单元表 --- spuInfo！
+        skuImage 库存单元图片表 --- spuImage!
+        skuSaleAttrValue sku销售属性值表{sku与销售属性值的中间表} --- skuInfo ，spuSaleAttrValue
+        skuAttrValue sku与平台属性值的中间表 --- skuInfo ，baseAttrValue
+     */
+        skuInfoMapper.insert(skuInfo);
+        List<SkuImage> skuImageList = skuInfo.getSkuImageList();
+        if (skuImageList != null && skuImageList.size() > 0) {
+            // 循环遍历
+            for (SkuImage skuImage : skuImageList) {
+                skuImage.setSkuId(skuInfo.getId());
+                skuImageMapper.insert(skuImage);
+            }
+        }
+
+        List<SkuSaleAttrValue> skuSaleAttrValueList = skuInfo.getSkuSaleAttrValueList();
+        // 调用判断集合方法
+        if (!CollectionUtils.isEmpty(skuSaleAttrValueList)) {
+            for (SkuSaleAttrValue skuSaleAttrValue : skuSaleAttrValueList) {
+                skuSaleAttrValue.setSkuId(skuInfo.getId());
+                skuSaleAttrValue.setSpuId(skuInfo.getSpuId());
+                skuSaleAttrValueMapper.insert(skuSaleAttrValue);
+            }
+        }
+
+        List<SkuAttrValue> skuAttrValueList = skuInfo.getSkuAttrValueList();
+        if (!CollectionUtils.isEmpty(skuAttrValueList)) {
+            for (SkuAttrValue skuAttrValue : skuAttrValueList) {
+                skuAttrValue.setSkuId(skuInfo.getId());
+                skuAttrValueMapper.insert(skuAttrValue);
+            }
+        }
+    }
+    @Override
+    public IPage<SkuInfo> getPage(Page<SkuInfo> pageParam) {
+        QueryWrapper<SkuInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.orderByDesc("id");
+
+        IPage<SkuInfo> page = skuManageMapper.getPage(pageParam, queryWrapper);
+        return page;
+    }
+
+    @Override
+    @Transactional
+    public void onSale(Long skuId) {
+        // 更改销售状态
+        SkuInfo skuInfoUp = new SkuInfo();
+        skuInfoUp.setId(skuId);
+        skuInfoUp.setIsSale(1);
+        skuInfoMapper.updateById(skuInfoUp);
+    }
+
+    @Override
+    @Transactional
+    public void cancelSale(Long skuId) {
+        // 更改销售状态
+        SkuInfo skuInfoUp = new SkuInfo();
+        skuInfoUp.setId(skuId);
+        skuInfoUp.setIsSale(0);
+        skuInfoMapper.updateById(skuInfoUp);
+    }
+    @Override
+    public SkuInfo getSkuInfo(Long skuId) {
+        SkuInfo skuInfo = skuInfoMapper.selectById(skuId);
+        // 根据skuId 查询图片列表集合
+        QueryWrapper<SkuImage> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("sku_id", skuId);
+        List<SkuImage> skuImageList = skuImageMapper.selectList(queryWrapper);
+
+        skuInfo.setSkuImageList(skuImageList);
+        return skuInfo;
+    }
+
+    @Override
+    public IPage<SkuInfo> findSkuByPage(Page<SkuInfo> skuInfoPage) {
+        return skuInfoMapper.selectPage(skuInfoPage,new QueryWrapper<SkuInfo>().orderByDesc("id"));
+    }
+
+    @Override
+    public BaseCategoryView getCategoryViewByCategory3Id(Long category3Id) {
+        return baseCategoryViewMapper.selectById(category3Id);
+    }
+    /**
+     * 获取sku价格
+     * @param skuId
+     * @return
+     */
+    @Override
+    public BigDecimal getSkuPrice(Long skuId) {
+        SkuInfo skuInfo = skuInfoMapper.selectById(skuId);
+        if(null != skuInfo) {
+            return skuInfo.getPrice();
+        }
+        return new BigDecimal("0");
+    }
+
+    @Override
+    public List<SpuSaleAttr> getSpuSaleAttrListCheckBySku(Long skuId, Long spuId) {
+        return spuSaleAttrMapper.selectSpuSaleAttrListCheckBySku(skuId, spuId);
+    }
+    @Override
+    public Map getSkuValueIdsMap(Long spuId) {
+        Map<Object, Object> map = new HashMap<>();
+        // key = 125|123 ,value = 37
+        List<Map> mapList = skuSaleAttrValueMapper.selectSaleAttrValuesBySpu(spuId);
+        if (mapList != null && mapList.size() > 0) {
+            // 循环遍历
+            for (Map skuMap : mapList) {
+                // key = 125|123 ,value = 37
+                map.put(skuMap.get("value_ids"), skuMap.get("sku_id"));
+            }
+        }
+        return map;
+    }
+    @Override
+    public List<SpuPoster> findSpuPosterBySpuId(Long spuId) {
+        QueryWrapper<SpuPoster> spuInfoQueryWrapper = new QueryWrapper<>();
+        spuInfoQueryWrapper.eq("spu_id",spuId);
+        List<SpuPoster> spuPosterList = spuPosterMapper.selectList(spuInfoQueryWrapper);
+        return spuPosterList;
+    }
+    @Override
+    public List<BaseAttrInfo> getAttrList(Long skuId) {
+
+        return baseAttrInfoMapper.selectBaseAttrInfoListBySkuId(skuId);
+    }
+
 }

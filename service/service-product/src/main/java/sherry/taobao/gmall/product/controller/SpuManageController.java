@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import sherry.taobao.gmall.common.result.Result;
 import sherry.taobao.gmall.model.product.BaseSaleAttr;
+import sherry.taobao.gmall.model.product.SpuImage;
 import sherry.taobao.gmall.model.product.SpuInfo;
+import sherry.taobao.gmall.model.product.SpuSaleAttr;
 import sherry.taobao.gmall.product.service.ManageService;
 
 import java.util.List;
@@ -49,5 +51,28 @@ public class SpuManageController {
         // 将获取到的数据返回即可！
         return Result.ok(spuInfoPageList);
     }
+
+    /**
+     * 根据spuId 查询spuImageList
+     * @param spuId
+     * @return
+     */
+    @GetMapping("spuImageList/{spuId}")
+    public Result<List<SpuImage>> getSpuImageList(@PathVariable("spuId") Long spuId) {
+        List<SpuImage> spuImageList = manageService.getSpuImageList(spuId);
+        return Result.ok(spuImageList);
+    }
+
+    /**
+     * 根据spuId 查询销售属性集合
+     * @param spuId
+     * @return
+     */
+    @GetMapping("spuSaleAttrList/{spuId}")
+    public Result<List<SpuSaleAttr>> getSpuSaleAttrList(@PathVariable("spuId") Long spuId) {
+        List<SpuSaleAttr> spuSaleAttrList = manageService.getSpuSaleAttrList(spuId);
+        return Result.ok(spuSaleAttrList);
+    }
+
 
 }

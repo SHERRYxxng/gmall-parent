@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import sherry.taobao.gmall.model.product.*;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Description:
@@ -77,4 +79,89 @@ public interface ManageService {
      * @param spuInfo
      */
     void saveSpuInfo(SpuInfo spuInfo);
+    /**
+     * 根据spuId 查询spuImageList
+     * @param spuId
+     * @return
+     */
+    List<SpuImage> getSpuImageList(Long spuId);
+
+    /**
+     * 根据spuId 查询销售属性集合
+     * @param spuId
+     * @return
+     */
+    List<SpuSaleAttr> getSpuSaleAttrList(Long spuId);
+    /**
+     * 保存数据
+     * @param skuInfo
+     */
+    void saveSkuInfo(SkuInfo skuInfo);
+    /**
+     * SKU分页列表
+     * @param pageParam
+     * @return
+     */
+    IPage<SkuInfo> getPage(Page<SkuInfo> pageParam);
+    /**
+     * 商品上架
+     * @param skuId
+     */
+    void onSale(Long skuId);
+
+    /**
+     * 商品下架
+     * @param skuId
+     */
+    void cancelSale(Long skuId);
+    /**
+     * 根据skuId 查询skuInfo
+     * @param skuId
+     * @return
+     */
+    SkuInfo getSkuInfo(Long skuId);
+
+
+    IPage<SkuInfo> findSkuByPage(Page<SkuInfo> skuInfoPage);
+
+    BaseCategoryView getCategoryViewByCategory3Id(Long category3Id);
+
+    /**
+     * 获取sku价格
+     * @param skuId
+     * @return
+     */
+    BigDecimal getSkuPrice(Long skuId);
+    /**
+     * 根据spuId，skuId 查询销售属性集合
+     * @param skuId
+     * @param spuId
+     * @return
+     */
+    /**
+     * 根据spuId，skuId 查询销售属性集合
+     * @param skuId
+     * @param spuId
+     * @return
+     */
+    List<SpuSaleAttr> getSpuSaleAttrListCheckBySku(Long skuId, Long spuId);
+    /**
+     * 根据spuId 查询map 集合属性
+     * @param spuId
+     * @return
+     */
+    Map getSkuValueIdsMap(Long spuId);
+
+    /**
+     * 通过skuId 集合来查询数据
+     * @param skuId
+     * @return
+     */
+    List<BaseAttrInfo> getAttrList(Long skuId);
+    /**
+     * 根据spuid获取商品海报
+     * @param spuId
+     * @return
+     */
+    List<SpuPoster> findSpuPosterBySpuId(Long spuId);
 }

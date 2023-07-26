@@ -19,7 +19,7 @@ import java.util.List;
 @ApiModel(description = "平台属性")
 @TableName("base_attr_info")
 public class BaseAttrInfo extends BaseEntity {
-	
+	//
 	private static final long serialVersionUID = 1L;
 	
 	@ApiModelProperty(value = "属性名称")

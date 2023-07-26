@@ -8,8 +8,9 @@ import sherry.taobao.gmall.model.product.BaseAttrValue;
  * @Description:
  * @Author: SHERRY
  * @email: <a href="mailto:SherryTh743779@gmail.com">TianHai</a>
- * @Date: 2023/7/24 18:57
+ * @Date: 2023/7/28 18:40
  */
 @Mapper
 public interface BaseAttrValueMapper extends BaseMapper<BaseAttrValue> {
 }
+

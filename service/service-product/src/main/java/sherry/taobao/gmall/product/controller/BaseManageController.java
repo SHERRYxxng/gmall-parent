@@ -4,10 +4,7 @@ import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import sherry.taobao.gmall.common.result.Result;
-import sherry.taobao.gmall.model.product.BaseAttrInfo;
-import sherry.taobao.gmall.model.product.BaseCategory1;
-import sherry.taobao.gmall.model.product.BaseCategory2;
-import sherry.taobao.gmall.model.product.BaseCategory3;
+import sherry.taobao.gmall.model.product.*;
 import sherry.taobao.gmall.product.service.ManageService;
 
 import java.util.List;
@@ -16,16 +13,26 @@ import java.util.List;
  * @Description:
  * @Author: SHERRY
  * @email: <a href="mailto:SherryTh743779@gmail.com">TianHai</a>
- * @Date: 2023/7/24 19:47
+ * @Date: 2023/7/28 18:24
  */
-@Api(tags = "商品基础属性接口")
-@RestController
-@CrossOrigin
+@Api(tags = "商品基础管理属性接口")//在swagger,Knife4j等接口文档中显示的控制器名
+@RestController//它是@Controller和@ResponseBody注解的组合，用于简化常见的RESTful控制器的编写。
 @RequestMapping("admin/product")
 public class BaseManageController {
-
+    //创建接口
     @Autowired
     private ManageService manageService;
+    /**
+     * 保存平台属性方法
+     * @param baseAttrInfo
+     * @return
+     */
+    @PostMapping("saveAttrInfo")
+    public Result saveAttrInfo(@RequestBody BaseAttrInfo baseAttrInfo) {
+        // 前台数据都被封装到该对象中baseAttrInfo
+        manageService.saveAttrInfo(baseAttrInfo);
+        return Result.ok();
+    }
 
     /**
      * 查询所有的一级分类信息
@@ -36,7 +43,6 @@ public class BaseManageController {
         List<BaseCategory1> baseCategory1List = manageService.getCategory1();
         return Result.ok(baseCategory1List);
     }
-
     /**
      * 根据一级分类Id 查询二级分类数据
      * @param category1Id
@@ -47,12 +53,6 @@ public class BaseManageController {
         List<BaseCategory2> baseCategory2List = manageService.getCategory2(category1Id);
         return Result.ok(baseCategory2List);
     }
-
-    /**
-     * 根据二级分类Id 查询三级分类数据
-     * @param category2Id
-     * @return
-     */
     @GetMapping("getCategory3/{category2Id}")
     public Result<List<BaseCategory3>> getCategory3(@PathVariable("category2Id") Long category2Id) {
         List<BaseCategory3> baseCategory3List = manageService.getCategory3(category2Id);
@@ -73,4 +73,23 @@ public class BaseManageController {
         List<BaseAttrInfo> baseAttrInfoList = manageService.getAttrInfoList(category1Id, category2Id, category3Id);
         return Result.ok(baseAttrInfoList);
     }
+    @GetMapping("getAttrValueList/{attrId}")
+    public Result<List<BaseAttrValue>> getAttrValueList(@PathVariable("attrId") Long attrId) {
+        BaseAttrInfo baseAttrInfo = manageService.getAttrInfo(attrId);
+        List<BaseAttrValue> baseAttrValueList = baseAttrInfo.getAttrValueList();
+        return Result.ok(baseAttrValueList);
+    }
+    /**
+     * 保存spu
+     * @param spuInfo
+     * @return
+     */
+    @PostMapping("saveSpuInfo")
+    public Result saveSpuInfo(@RequestBody SpuInfo spuInfo){
+        // 调用服务层的保存方法
+        manageService.saveSpuInfo(spuInfo);
+        return Result.ok();
+    }
 }
+
+

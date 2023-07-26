@@ -1,6 +1,6 @@
 package sherry.taobao.gmall.product.service.impl;
 
-
+import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -17,10 +17,23 @@ import java.util.List;
  * @Description:
  * @Author: SHERRY
  * @email: <a href="mailto:SherryTh743779@gmail.com">TianHai</a>
- * @Date: 2023/7/24 18:59
+ * @Date: 2023/7/28 18:42
  */
 @Service
 public class ManageServiceImpl implements ManageService {
+    @Autowired
+    private SpuSaleAttrMapper spuSaleAttrMapper;
+    @Autowired
+    private SpuInfoMapper spuInfoMapper;
+    @Autowired
+    private SpuImageMapper spuImageMapper;
+    @Autowired
+    private SpuSaleAttrValueMapper spuSaleAttrValueMapper;
+    @Autowired
+    private SpuPosterMapper spuPosterMapper;
+
+    @Autowired
+    private BaseSaleAttrMapper baseSaleAttrMapper;
     @Autowired
     private BaseCategory1Mapper baseCategory1Mapper;
 
@@ -36,14 +49,6 @@ public class ManageServiceImpl implements ManageService {
     @Autowired
     private BaseAttrValueMapper baseAttrValueMapper;
 
-    @Autowired
-    private SpuInfoMapper spuInfoMapper;
-
-    @Override
-    public List<BaseCategory1> getCategory1() {
-        return baseCategory1Mapper.selectList(null);
-    }
-
 
     @Override
     public IPage<SpuInfo> getSpuInfoPage(Page<SpuInfo> pageParam, SpuInfo spuInfo) {
@@ -53,11 +58,51 @@ public class ManageServiceImpl implements ManageService {
         return spuInfoMapper.selectPage(pageParam, queryWrapper);
     }
 
+    //实现类
+    @Override
+    public BaseAttrInfo getAttrInfo(Long attrId) {
+        BaseAttrInfo baseAttrInfo = baseAttrInfoMapper.selectById(attrId);
+        // 查询到最新的平台属性值集合数据放入平台属性中！
+        baseAttrInfo.setAttrValueList(getAttrValueList(attrId));
+        return baseAttrInfo;
+    }
+
+    /**
+     * 根据属性id获取属性值
+     * @param attrId
+     * @return
+     */
+    private List<BaseAttrValue> getAttrValueList(Long attrId) {
+        // select * from baseAttrValue where attrId = ?
+        QueryWrapper queryWrapper = new QueryWrapper<BaseAttrValue>();
+        queryWrapper.eq("attr_id", attrId);
+        List<BaseAttrValue> baseAttrValueList = baseAttrValueMapper.selectList(queryWrapper);
+        return baseAttrValueList;
+    }
+
+
+    /**
+     * @Description 调用getCategory1返回一个BaseCategory1集合,调用baseCategory1Mapper的父类中的selectList返回所有列表,条件为null
+     * @Date 2023/7/28 18:43
+     * @Param
+     * @return
+     * @Author SHERRY
+     */
+    @Override
+    public List<BaseCategory1> getCategory1() {
+
+        return baseCategory1Mapper.selectList(null);
+    }
+
     @Override
     public List<BaseCategory2> getCategory2(Long category1Id) {
+
         // select * from baseCategory2 where Category1Id = ?
+        //指定查询的表为BaseCategory2
         QueryWrapper queryWrapper = new QueryWrapper<BaseCategory2>();
+        //查询BaseCategory2中当category1_id等于category1Id的情况下的所有列,即筛选
         queryWrapper.eq("category1_id",category1Id);
+
         List<BaseCategory2> baseCategory2List = baseCategory2Mapper.selectList(queryWrapper);
         return baseCategory2List;
     }
@@ -76,16 +121,6 @@ public class ManageServiceImpl implements ManageService {
         return baseAttrInfoMapper.selectBaseAttrInfoList(category1Id, category2Id, category3Id);
     }
 
-    /**
-     * @Description: 保存 修改信息<br><br>
-     *               默认情况下只能回滚RuntimeException
-     *               SqlException和IOException不属于运行时异常不能回滚<br><br>
-     *               我们这里通过Transactional 注解修改回滚级别为Exception顶级实现类,顶级接口是Throws可抛出<br><br>
-     * @Date 2023/7/26 9:22
-     * @Param [baseAttrInfo]
-     * @return void
-     * @Author SHERRY
-     */
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveAttrInfo(BaseAttrInfo baseAttrInfo) {
@@ -118,5 +153,69 @@ public class ManageServiceImpl implements ManageService {
             }
         }
     }
+    @Override
+    public List<BaseSaleAttr> getBaseSaleAttrList() {
+        return baseSaleAttrMapper.selectList(null);
+    }
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveSpuInfo(SpuInfo spuInfo) {
+    /*
+        spuInfo;
+        spuImage;
+        spuSaleAttr;
+        spuSaleAttrValue;
+        spuPoster
+     */
+        spuInfoMapper.insert(spuInfo);
 
+        //  获取到spuImage 集合数据
+        List<SpuImage> spuImageList = spuInfo.getSpuImageList();
+        //  判断不为空
+        if (!CollectionUtils.isEmpty(spuImageList)){
+            //  循环遍历
+            for (SpuImage spuImage : spuImageList) {
+                //  需要将spuId 赋值
+                spuImage.setSpuId(spuInfo.getId());
+                //  保存spuImge
+                spuImageMapper.insert(spuImage);
+            }
+        }
+        //  获取销售属性集合
+        List<SpuSaleAttr> spuSaleAttrList = spuInfo.getSpuSaleAttrList();
+        //  判断
+        if (!CollectionUtils.isEmpty(spuSaleAttrList)){
+            //  循环遍历
+            for (SpuSaleAttr spuSaleAttr : spuSaleAttrList) {
+                //  需要将spuId 赋值
+                spuSaleAttr.setSpuId(spuInfo.getId());
+                spuSaleAttrMapper.insert(spuSaleAttr);
+
+                //  再此获取销售属性值集合
+                List<SpuSaleAttrValue> spuSaleAttrValueList = spuSaleAttr.getSpuSaleAttrValueList();
+                //  判断
+                if (!CollectionUtils.isEmpty(spuSaleAttrValueList)){
+                    //  循环遍历
+                    for (SpuSaleAttrValue spuSaleAttrValue : spuSaleAttrValueList) {
+                        //   需要将spuId， sale_attr_name 赋值
+                        spuSaleAttrValue.setSpuId(spuInfo.getId());
+                        spuSaleAttrValue.setSaleAttrName(spuSaleAttr.getSaleAttrName());
+                        spuSaleAttrValueMapper.insert(spuSaleAttrValue);
+                    }
+                }
+            }
+        }
+
+        //  获取到posterList 集合数据
+        List<SpuPoster> spuPosterList = spuInfo.getSpuPosterList();
+        //  判断不为空
+        if (!CollectionUtils.isEmpty(spuPosterList)){
+            for (SpuPoster spuPoster : spuPosterList) {
+                //  需要将spuId 赋值
+                spuPoster.setSpuId(spuInfo.getId());
+                //  保存spuPoster
+                spuPosterMapper.insert(spuPoster);
+            }
+        }
+    }
 }

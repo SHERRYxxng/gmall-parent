@@ -11,7 +11,7 @@ import lombok.Data;
 @ApiModel(description = "商品二级分类")
 @TableName("base_category2")
 public class BaseCategory2 extends BaseEntity {
-
+    //此表中有2个属性一个为一级分类一个为二级分类,通过join on 让两个相同字段进行连接这里连接为表1的id和表二的category1_id
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "二级分类名称")

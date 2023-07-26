@@ -17,7 +17,7 @@ import lombok.Data;
 @ApiModel(description = "商品三级分类")
 @TableName("base_category3")
 public class BaseCategory3 extends BaseEntity {
-	
+	//三表连接实际上还是两表,在第二个表的基础上join on 表2的id为表3的category2_id
 	private static final long serialVersionUID = 1L;
 	
 	@ApiModelProperty(value = "三级分类名称")

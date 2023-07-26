@@ -10,7 +10,7 @@ import java.util.List;
  * @Description:
  * @Author: SHERRY
  * @email: <a href="mailto:SherryTh743779@gmail.com">TianHai</a>
- * @Date: 2023/7/24 18:57
+ * @Date: 2023/7/28 18:41
  */
 public interface ManageService {
 
@@ -52,12 +52,29 @@ public interface ManageService {
      */
     List<BaseAttrInfo> getAttrInfoList(Long category1Id, Long category2Id, Long category3Id);
 
-
     /**
      * 保存平台属性方法
      * @param baseAttrInfo
      */
     void saveAttrInfo(BaseAttrInfo baseAttrInfo);
-    IPage<SpuInfo> getSpuInfoPage(Page<SpuInfo> pageParam, SpuInfo spuInfo);
+    /**
+     * 根据attrId 查询平台属性对象
+     * @param attrId
+     * @return
+     */
+    BaseAttrInfo getAttrInfo(Long attrId);
 
+    /**
+     * spu分页查询
+     * @param pageParam
+     * @param spuInfo
+     * @return
+     */
+    IPage<SpuInfo> getSpuInfoPage(Page<SpuInfo> pageParam, SpuInfo spuInfo);
+    List<BaseSaleAttr> getBaseSaleAttrList();
+    /**
+     * 保存商品数据
+     * @param spuInfo
+     */
+    void saveSpuInfo(SpuInfo spuInfo);
 }
